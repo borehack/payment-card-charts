@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Payment Card Transaction Chart</title>
+    <script src="Chart.bundle.min.js" ></script>
+</head>
+<body>
+
+<div style="width: 1200px">
+    <canvas id="myChart" width="300" height="150"></canvas>
+</div>
+
+<script>
+var ctx = document.getElementById('myChart');
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['', 'Pay 1', 'Pay 2', 'Pay 3', 'Pay 1', 'Pay 4', 'Pay 2', 'Pay 5', 'Pay 6', ''],
+        datasets: [ {
+            label: 'Balance',
+            data: [0, -30, -45, 45, -30, 0, 0, 0],
+            type: 'bar',
+            borderWidth: 1,
+            yAxisID: 'y-axis-1',
+            borderColor: 'rgba(255, 255, 0, 1)',
+            backgroundColor: 'rgba(255, 255, 0, .2)',
+        },{
+            label: 'Open to Buy',
+            data: [0, 20, 5, 95, 20, 50, 0, 0],
+            type: 'bar',
+            yAxisID: 'y-axis-2',
+            borderWidth: 1,
+            borderColor: 'rgba(0, 0, 255, 1)',
+            backgroundColor: 'rgba(0, 0, 255, .2)',
+        },{
+            label: 'Credit Limit',
+            data: [-50, -50, -50, -50, -50, -50, -50, -50, -50, -50],
+            pointRadius: 0,
+            type: 'line',
+            fill: false,
+            borderWidth: 8,
+            borderColor: 'rgba(255, 0, 0, 1)',
+            backgroundColor: 'rgba(255, 0, 0, 1)',
+            pointStyle: 'line',
+        },{
+            label: ['Decline', 'Ignored'],
+            data: [0, 0, 0, 0, 0, 0, 0, 0],
+            pointRadius: [0, 0, 0, 0, 0, 0, 0, 0],
+            pointStyle: 'crossRot',
+            type: 'line',
+            showLine: false,
+            borderWidth: 5,
+            yAxisID: 'y-axis-1',
+            borderColor: 'rgba(255, 0, 0, 1)',
+            backgroundColor: 'rgba(255, 0, 0, 1)',
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                type: 'linear',
+                display: true,
+                position: 'left',
+                id: 'y-axis-1',
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Balance'
+                },
+                gridLines: {
+                    zeroLineWidth: 2
+                },
+                ticks: {
+                    max: 50,
+                    min: -50
+                }
+            }, {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                id: 'y-axis-2',
+                gridLines: {
+                    drawOnChartArea: false
+                },
+                ticks: {
+                    beginAtZero: true,
+                    max: 100
+                },
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Open to Buy'
+                },
+            }]
+        }
+    }
+});
+
+function a() {
+    var els = document.getElementsByName("dv");
+    var cl = document.getElementsByName("cl")[0].value * 1;
+    var velocity = document.getElementsByName("velocity")[0].checked;
+    if (velocity) {
+        myChart.data.datasets[2].label = 'Spending Limit';
+    } else {
+        myChart.data.datasets[2].label = 'Credit Limit';
+    }
+    var balance = 0;
+    var otb = cl * -1;
+    var bmin = cl;
+    var bmax = 0;
+    myChart.data.datasets[2].data[8] = cl;
+    myChart.data.datasets[2].data[9] = cl;
+    for (var i = 0; i < els.length; i++) {
+        myChart.data.datasets[2].data[i] = cl;
+        var pay = els[i].value * 1;
+
+        if ( (otb + pay) >= 0 && (velocity == false || pay < 0)) {
+            balance += pay;
+            otb += pay;
+            myChart.data.datasets[3].pointRadius[i +1] = 0;
+            myChart.data.datasets[3].data[i +1] = 0;
+        } else {
+            myChart.data.datasets[3].data[i +1] = balance;
+            myChart.data.datasets[3].pointRadius[i +1] = 20;
+        }
+        if (balance < bmin) {
+            bmin = balance;
+        }
+        if (balance > bmax) {
+            bmax = balance;
+        }
+        if (pay < 0) {
+            myChart.data.labels[i +1] = new Array('Payment', pay);
+        } else {
+            myChart.data.labels[i +1] = new Array('Deposit', pay);
+        }
+        myChart.data.datasets[0].data[i +1] = balance;
+        myChart.data.datasets[1].data[i +1] = otb;
+    }
+    myChart.options.scales.yAxes[0].ticks.max = bmax;
+    myChart.options.scales.yAxes[0].ticks.min = bmin;
+    myChart.options.scales.yAxes[1].ticks.max = bmax - bmin;
+    myChart.update();
+}
+
+</script>
+
+    <input type="button" onClick="a()" value="Update Chart" />
+
+    <input name="dv" size="1" onchange="a()" value="-10" />
+    <input name="dv" size="1" onchange="a()" value="-15" />
+    <input name="dv" size="1" onchange="a()" value="-5" />
+    <input name="dv" size="1" onchange="a()" value="-10" />
+    <input name="dv" size="1" onchange="a()" value="-20" />
+    <input name="dv" size="1" onchange="a()" value="-20" />
+    <input name="dv" size="1" onchange="a()" value="-10" />
+    <input name="dv" size="1" onchange="a()" value="-10" />
+    <br />
+    Limit :
+    <input name="cl" size="1" onchange="a()" value="-50" />
+    <input type="checkbox" name="velocity" onchange="a()" /> velocity Limit
+</body>
+</html>
